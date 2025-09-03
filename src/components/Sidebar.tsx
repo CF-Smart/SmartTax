@@ -53,12 +53,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="text-center mb-8">
         <div className="w-20 h-20 bg-gradient-to-br from-[#2F6BFF] to-[#1E40AF] rounded-2xl flex items-center justify-center shadow-2xl mx-auto mb-4 border-2 border-white/20 overflow-hidden">
           <img
-            src={`${import.meta.env.BASE_URL}praloglogo.jpg`}
-            alt="Pralog Logo"
+            src={`${import.meta.env.BASE_URL}${currentUser === 'cfsmart' ? 'logocfsmart.jpg' : 'praloglogo.jpg'}`}
+            alt={currentUser === 'cfsmart' ? 'CF Smart Logo' : 'Pralog Logo'}
             className="w-16 h-16 object-cover rounded-xl"
           />
         </div>
-        <h2 className="text-white text-xl font-bold">Grupo Pralog</h2>
+        <h2 className="text-white text-xl font-bold">{currentUser === 'cfsmart' ? 'CF Smart' : 'Grupo Pralog'}</h2>
         <p className="text-[#E5F0FF]/80 text-sm">Smart Tax</p>
         
         {/* Botão Home */}
