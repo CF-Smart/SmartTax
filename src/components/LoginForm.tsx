@@ -3,7 +3,7 @@ import { Lock, User, Eye, EyeOff, LogIn, Building } from 'lucide-react';
 
 interface LoginFormProps {
   onLogin: (username: string) => void;
-  empresa?: 'cfsmart' | 'pralog';
+  empresa?: 'cfsmart' | 'pralog' | 'jejuro';
   onVoltar?: () => void;
 }
 
@@ -14,10 +14,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, empresa, onVoltar }) => 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const users = {
-    'cfsmart': 'soubotafogo',
-    'pralog': '1234'
+  const usersByEmpresa: Record<string, Record<string, string>> = {
+    pralog: {
+      pralog: '1234',
+      cfsmart: 'soubotafogo',
+    },
+    jejuro: {
+      jejuro: 'jejuro2025',
+      cfsmart01: 'soubotafogo',
+    },
   };
+  const users = empresa ? usersByEmpresa[empresa] : { cfsmart: 'soubotafogo', pralog: '1234', jejuro: 'jejuro2025', cfsmart01: 'soubotafogo' };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,14 +163,30 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, empresa, onVoltar }) => 
                 Usuários Autorizados
               </h3>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-[#E5F0FF]/80">CF Smart:</span>
-                  <code className="text-[#2F6BFF] bg-[#2F6BFF]/10 px-2 py-1 rounded">cfsmart</code>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[#E5F0FF]/80">Pralog:</span>
-                  <code className="text-[#2F6BFF] bg-[#2F6BFF]/10 px-2 py-1 rounded">pralog</code>
-                </div>
+                {empresa === 'pralog' && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#E5F0FF]/80">CF Smart:</span>
+                      <code className="text-[#2F6BFF] bg-[#2F6BFF]/10 px-2 py-1 rounded">cfsmart</code>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#E5F0FF]/80">Pralog:</span>
+                      <code className="text-[#2F6BFF] bg-[#2F6BFF]/10 px-2 py-1 rounded">pralog</code>
+                    </div>
+                  </>
+                )}
+                {empresa === 'jejuro' && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#E5F0FF]/80">CF Smart:</span>
+                      <code className="text-[#2F6BFF] bg-[#2F6BFF]/10 px-2 py-1 rounded">cfsmart01</code>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#E5F0FF]/80">Jejuro:</span>
+                      <code className="text-[#2F6BFF] bg-[#2F6BFF]/10 px-2 py-1 rounded">jejuro</code>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

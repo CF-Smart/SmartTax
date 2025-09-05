@@ -24,7 +24,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'error'>('idle');
   const [realtimeSubscription, setRealtimeSubscription] = useState<any>(null);
-  const [selectedEmpresa, setSelectedEmpresa] = useState<'pralog' | null>(null);
+  const [selectedEmpresa, setSelectedEmpresa] = useState<'pralog' | 'jejuro' | null>(null);
 
   // Verificar autenticação salva
   useEffect(() => {
@@ -33,6 +33,9 @@ function App() {
       const authData = JSON.parse(savedAuth);
       setIsAuthenticated(true);
       setCurrentUser(authData.username);
+      if (authData.empresa) {
+        setSelectedEmpresa(authData.empresa);
+      }
     }
   }, []);
 
@@ -58,9 +61,10 @@ function App() {
     setSyncStatus('syncing');
     
     try {
-      // SEMPRE buscar dados do usuário 'cfsmart' como fonte única - FORÇAR RELOAD
-      console.log('☁️ FORÇANDO busca de dados na nuvem (usuário: cfsmart)...');
-      const cloudData = await csvService.loadCsvData('cfsmart');
+      // Buscar dados do administrador do grupo selecionado
+      const adminUserId = selectedEmpresa === 'jejuro' ? 'cfsmart01' : 'cfsmart';
+      console.log('☁️ FORÇANDO busca de dados na nuvem (usuário admin do grupo):', adminUserId);
+      const cloudData = await csvService.loadCsvData(adminUserId);
       
       let csvText: string;
       let isCustom = false;
@@ -74,9 +78,10 @@ function App() {
         isCustom = true;
         setSyncStatus('synced');
         
-        // LIMPAR backup local antigo e salvar novo
-        localStorage.removeItem('dashboard_csv_backup');
-        localStorage.setItem('dashboard_csv_backup', csvText);
+        // LIMPAR backup local antigo e salvar novo (por grupo)
+        const backupKey = selectedEmpresa ? `dashboard_csv_backup_${selectedEmpresa}` : 'dashboard_csv_backup';
+        localStorage.removeItem(backupKey);
+        localStorage.setItem(backupKey, csvText);
         console.log('💾 Backup local atualizado com dados da nuvem');
       } else {
         console.log('📁 Nenhum dado na nuvem, carregando dados padrão...');
@@ -118,7 +123,8 @@ function App() {
   const loadBackupData = async () => {
     console.log('💾 Tentando carregar backup local...');
     try {
-      const backup = localStorage.getItem('dashboard_csv_backup');
+      const backupKey = selectedEmpresa ? `dashboard_csv_backup_${selectedEmpresa}` : 'dashboard_csv_backup';
+      const backup = localStorage.getItem(backupKey);
       if (backup) {
         console.log('✅ Backup local encontrado!');
         const parsedData = parseCSV(backup);
@@ -160,7 +166,8 @@ function App() {
     }
     
     // Configurar nova subscription
-    const subscription = csvService.subscribeToChanges('cfsmart', (newCsvContent) => {
+    const adminUserId = selectedEmpresa === 'jejuro' ? 'cfsmart01' : 'cfsmart';
+    const subscription = csvService.subscribeToChanges(adminUserId, (newCsvContent) => {
       console.log('🔄 DADOS ATUALIZADOS EM TEMPO REAL!');
       console.log('📄 Novo conteúdo recebido:', newCsvContent.length, 'caracteres');
       console.log('📄 Primeiras linhas:', newCsvContent.substring(0, 200));
@@ -177,8 +184,9 @@ function App() {
         setIsUsingCustomData(true);
         setSyncStatus('synced');
         
-        // Salvar backup
-        localStorage.setItem('dashboard_csv_backup', newCsvContent);
+        // Salvar backup por grupo
+        const backupKey = selectedEmpresa ? `dashboard_csv_backup_${selectedEmpresa}` : 'dashboard_csv_backup';
+        localStorage.setItem(backupKey, newCsvContent);
         
         // Resetar filtros
         setGrupoSelecionado([]);
@@ -230,6 +238,7 @@ function App() {
     // Salvar autenticação
     localStorage.setItem('dashboard_auth', JSON.stringify({
       username,
+      empresa: selectedEmpresa,
       timestamp: Date.now()
     }));
     
@@ -267,8 +276,9 @@ function App() {
   };
 
   const handleFileUpload = async (csvText: string) => {
-    if (currentUser !== 'cfsmart') {
-      alert('⚠️ Apenas o usuário CF Smart pode fazer upload de dados.');
+    const isAdmin = (selectedEmpresa === 'pralog' && currentUser === 'cfsmart') || (selectedEmpresa === 'jejuro' && currentUser === 'cfsmart01');
+    if (!isAdmin) {
+      alert('⚠️ Apenas o usuário administrador do grupo pode fazer upload de dados.');
       return;
     }
     
@@ -292,12 +302,14 @@ function App() {
       const gruposUnicos = [...new Set(parsedData.map(d => d.GRUPO))];
       console.log('🔎 Grupos únicos encontrados após upload:', gruposUnicos);
       
-      // Salvar backup local
-      localStorage.setItem('dashboard_csv_backup', csvText);
+      // Salvar backup local por grupo
+      const backupKey = selectedEmpresa ? `dashboard_csv_backup_${selectedEmpresa}` : 'dashboard_csv_backup';
+      localStorage.setItem(backupKey, csvText);
       
       // Salvar na nuvem
       console.log('☁️ Salvando na nuvem...');
-      await csvService.saveCsvData('cfsmart', csvText);
+      const adminUserId = selectedEmpresa === 'jejuro' ? 'cfsmart01' : 'cfsmart';
+      await csvService.saveCsvData(adminUserId, csvText);
       console.log('✅ Dados salvos na nuvem!');
       
       setSyncStatus('synced');
@@ -317,8 +329,9 @@ function App() {
   };
 
   const handleResetToDefault = async () => {
-    if (currentUser !== 'cfsmart') {
-      alert('⚠️ Apenas o usuário CF Smart pode resetar os dados.');
+    const isAdmin = (selectedEmpresa === 'pralog' && currentUser === 'cfsmart') || (selectedEmpresa === 'jejuro' && currentUser === 'cfsmart01');
+    if (!isAdmin) {
+      alert('⚠️ Apenas o usuário administrador do grupo pode resetar os dados.');
       return;
     }
     
@@ -330,10 +343,11 @@ function App() {
       const supabase = await getSupabaseClient();
       if (supabase) {
         console.log('🗑️ Removendo dados da nuvem...');
+        const adminUserId = selectedEmpresa === 'jejuro' ? 'cfsmart01' : 'cfsmart';
         await supabase
           .from('csv_data')
           .delete()
-          .eq('user_id', 'cfsmart');
+          .eq('user_id', adminUserId);
       }
       
       // Carregar dados padrão
@@ -348,8 +362,9 @@ function App() {
       setIsUsingCustomData(false);
       setSyncStatus('idle');
       
-      // Limpar backup
-      localStorage.removeItem('dashboard_csv_backup');
+      // Limpar backup por grupo
+      const backupKey = selectedEmpresa ? `dashboard_csv_backup_${selectedEmpresa}` : 'dashboard_csv_backup';
+      localStorage.removeItem(backupKey);
       
       // Resetar filtros
       setGrupoSelecionado([]);
@@ -474,6 +489,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-[#0B1B34] to-[#1E3A8A]">
       <Sidebar
         currentUser={currentUser}
+        empresaSelecionada={selectedEmpresa || 'pralog'}
         gruposUnicos={gruposUnicos}
         empresasDoGrupo={empresasDoGrupo}
         grupoSelecionado={grupoSelecionado}
@@ -485,6 +501,7 @@ function App() {
         onDownloadTemplate={handleDownloadTemplate}
         isUsingCustomData={isUsingCustomData}
         isLoading={loading}
+        isAdmin={(selectedEmpresa === 'pralog' && currentUser === 'cfsmart') || (selectedEmpresa === 'jejuro' && currentUser === 'cfsmart01')}
         onLogout={handleLogout}
         onResetDashboard={handleResetDashboard}
       />
@@ -497,7 +514,7 @@ function App() {
           </h1>
           <div className="flex items-center gap-4">
             <p className="text-[#E5F0FF]/80">
-              Análise de Situação Tributária - Grupo PRA LOG
+              {`Análise de Situação Tributária - Grupo ${selectedEmpresa === 'jejuro' ? 'JEJURO' : 'PRA LOG'}`}
             </p>
             
             {/* Status badges */}

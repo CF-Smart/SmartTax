@@ -4,6 +4,7 @@ import MultiSelect from './MultiSelect';
 
 interface SidebarProps {
   currentUser: string;
+  empresaSelecionada: 'pralog' | 'jejuro';
   gruposUnicos: string[];
   empresasDoGrupo: string[];
   grupoSelecionado: string[];
@@ -15,12 +16,14 @@ interface SidebarProps {
   onDownloadTemplate: () => void;
   isUsingCustomData: boolean;
   isLoading: boolean;
+  isAdmin: boolean;
   onLogout: () => void;
   onResetDashboard: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   currentUser,
+  empresaSelecionada,
   gruposUnicos,
   empresasDoGrupo,
   grupoSelecionado,
@@ -31,6 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onResetToDefault,
   onDownloadTemplate,
   isUsingCustomData,
+  isAdmin,
   onLogout,
   onResetDashboard,
 }) => {
@@ -53,12 +57,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="text-center mb-8">
         <div className="w-20 h-20 bg-gradient-to-br from-[#2F6BFF] to-[#1E40AF] rounded-2xl flex items-center justify-center shadow-2xl mx-auto mb-4 border-2 border-white/20 overflow-hidden">
           <img
-            src={`${import.meta.env.BASE_URL}${currentUser === 'cfsmart' ? 'logocfsmart.jpg' : 'praloglogo.jpg'}`}
-            alt={currentUser === 'cfsmart' ? 'CF Smart Logo' : 'Pralog Logo'}
+            src={`${import.meta.env.BASE_URL}${empresaSelecionada === 'jejuro' ? 'bobs-logo 2025.png' : (currentUser === 'cfsmart' ? 'logocfsmart.jpg' : 'praloglogo.jpg')}`}
+            alt={empresaSelecionada === 'jejuro' ? 'Jejuro Logo' : (currentUser === 'cfsmart' ? 'CF Smart Logo' : 'Pralog Logo')}
             className="w-16 h-16 object-cover rounded-xl"
           />
         </div>
-        <h2 className="text-white text-xl font-bold">{currentUser === 'cfsmart' ? 'CF Smart' : 'Grupo Pralog'}</h2>
+        <h2 className="text-white text-xl font-bold">{empresaSelecionada === 'jejuro' ? 'Grupo Jejuro' : (currentUser === 'cfsmart' ? 'CF Smart' : 'Grupo Pralog')}</h2>
         <p className="text-[#E5F0FF]/80 text-sm">Smart Tax</p>
         
         {/* Botão Home */}
@@ -104,8 +108,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Ações de Dados - Apenas para CF Smart */}
-      {currentUser === 'cfsmart' && (
+      {/* Ações de Dados - Apenas para Admin do Grupo */}
+      {isAdmin && (
       <div className="mb-8 space-y-4">
         <h3 className="text-[#E5F0FF] text-sm font-semibold mb-2 flex items-center gap-2">
           <Settings size={16} />
@@ -147,14 +151,14 @@ const Sidebar: React.FC<SidebarProps> = ({
             <span className="text-[#E5F0FF] text-xs font-medium">Sincronização Ativa</span>
           </div>
           <p className="text-[#E5F0FF]/70 text-xs">
-            Você controla os dados para todos os usuários
+            Você controla os dados deste grupo
           </p>
         </div>
       </div>
       )}
       
-      {/* Indicador para usuários Pralog */}
-      {currentUser === 'pralog' && (
+      {/* Indicador para usuários do grupo que não são admins */}
+      {(!isAdmin && (currentUser === 'pralog' || currentUser === 'jejuro')) && (
         <div className="mb-8">
           <div className="p-4 bg-[#2F6BFF]/10 border border-[#2F6BFF]/20 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
@@ -162,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <span className="text-[#E5F0FF] text-xs font-medium">Sincronização Ativa</span>
             </div>
             <p className="text-[#E5F0FF]/70 text-xs">
-              Dados sincronizados automaticamente do CF Smart
+              Dados sincronizados automaticamente do administrador do grupo
             </p>
           </div>
         </div>
