@@ -126,17 +126,17 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, color, deta
 
   return (
     <div
-      className="bg-[#0F2A5F] rounded-3xl p-6 shadow-lg border border-white/10 relative group"
+      className="bg-[#0F2A5F] rounded-3xl p-4 md:p-6 shadow-lg border border-white/10 relative group min-w-0"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setShowTooltip(false)}
       style={{ cursor: detalhamentos && detalhamentos.length > 0 ? 'help' : 'default' }}
       data-card={title}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-xl ${color}`}>{icon}</div>
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <div className={`p-2.5 md:p-3 rounded-xl ${color}`}>{icon}</div>
       </div>
       <h3 className="text-[#E5F0FF] text-sm font-medium mb-2">{title}</h3>
-      <p className={`text-2xl font-bold ${getValueColor(value)}`}>{displayValue(value)}</p>
+      <p className={`text-xl md:text-2xl font-bold ${getValueColor(value)}`}>{displayValue(value)}</p>
       
       {/* Tooltip com posicionamento inteligente */}
       {showTooltip && detalhamentos && detalhamentos.length > 0 && (
@@ -145,7 +145,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, color, deta
             ? 'bottom-full mb-2' 
             : 'top-full mt-2'
         }`}>
-          <div style={{ maxHeight: 260, overflowY: 'auto', minWidth: 260 }} className="custom-tooltip-scroll">
+          <div style={{ maxHeight: 260, overflowY: 'auto', minWidth: 240 }} className="custom-tooltip-scroll">
             {renderTooltip()}
           </div>
           {/* Seta do tooltip */}

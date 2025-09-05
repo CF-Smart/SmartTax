@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -50,6 +50,13 @@ const COLORS = {
 const PIE_COLORS = ['#60A5FA', '#3B82F6', '#1E40AF', '#1D4ED8'];
 
 const Charts: React.FC<ChartsProps> = ({ debitosPorGrupo, distribuicaoPorTipo, debitosPorEmpresa, detalhamentosPorEmpresa = [] }) => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 768);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -134,20 +141,20 @@ const Charts: React.FC<ChartsProps> = ({ debitosPorGrupo, distribuicaoPorTipo, d
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
       {/* Débitos por Grupo */}
-      <div className="bg-[#0F2A5F] rounded-3xl p-6 shadow-lg border border-white/10">
+      <div className="bg-[#0F2A5F] rounded-3xl p-4 md:p-6 shadow-lg border border-white/10 min-w-0">
         <h3 className="text-[#E5F0FF] text-lg font-semibold mb-4">Débitos por Grupo</h3>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={debitosPorGrupo}>
+        <ResponsiveContainer width="100%" height={isMobile ? 260 : 350}>
+          <BarChart data={debitosPorGrupo} margin={isMobile ? { left: 10, right: 10, top: 10, bottom: 10 } : undefined}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(229, 240, 255, 0.1)" />
             <XAxis 
               dataKey="grupo" 
-              tick={{ fill: '#E5F0FF', fontSize: 12 }}
+              tick={{ fill: '#E5F0FF', fontSize: isMobile ? 10 : 12 }}
               axisLine={{ stroke: 'rgba(229, 240, 255, 0.2)' }}
             />
             <YAxis 
-              tick={{ fill: '#E5F0FF', fontSize: 12 }}
+              tick={{ fill: '#E5F0FF', fontSize: isMobile ? 10 : 12 }}
               axisLine={{ stroke: 'rgba(229, 240, 255, 0.2)' }}
               tickFormatter={formatCurrency}
             />
@@ -161,15 +168,15 @@ const Charts: React.FC<ChartsProps> = ({ debitosPorGrupo, distribuicaoPorTipo, d
       </div>
 
       {/* Distribuição por Tipo */}
-      <div className="bg-[#0F2A5F] rounded-3xl p-6 shadow-lg border border-white/10">
+      <div className="bg-[#0F2A5F] rounded-3xl p-4 md:p-6 shadow-lg border border-white/10 min-w-0">
         <h3 className="text-[#E5F0FF] text-lg font-semibold mb-4">Distribuição por Tipo de Débito</h3>
-        <ResponsiveContainer width="100%" height={350}>
+        <ResponsiveContainer width="100%" height={isMobile ? 260 : 350}>
           <PieChart>
             <Pie
               data={distribuicaoPorTipo}
               cx="50%"
               cy="50%"
-              outerRadius={120}
+              outerRadius={isMobile ? 80 : 120}
               fill="#8884d8"
               dataKey="valor"
               nameKey="tipo"
@@ -180,6 +187,8 @@ const Charts: React.FC<ChartsProps> = ({ debitosPorGrupo, distribuicaoPorTipo, d
             </Pie>
             <Tooltip content={<PieTooltip />} />
             <Legend 
+              verticalAlign={isMobile ? 'bottom' : 'bottom'}
+              height={isMobile ? 24 : undefined}
               wrapperStyle={{ color: '#E5F0FF' }}
               formatter={(value) => <span style={{ color: '#E5F0FF' }}>{value}</span>}
             />
@@ -188,22 +197,22 @@ const Charts: React.FC<ChartsProps> = ({ debitosPorGrupo, distribuicaoPorTipo, d
       </div>
 
       {/* Débitos por Empresa */}
-      <div className="bg-[#0F2A5F] rounded-3xl p-6 shadow-lg border border-white/10 xl:col-span-2">
+      <div className="bg-[#0F2A5F] rounded-3xl p-4 md:p-6 shadow-lg border border-white/10 xl:col-span-2 min-w-0">
         <h3 className="text-[#E5F0FF] text-lg font-semibold mb-4">Débitos por Empresa</h3>
-        <ResponsiveContainer width="100%" height={Math.max(300, debitosPorEmpresa.length * 40)}>
-          <BarChart data={debitosPorEmpresa} margin={{ left: 20, right: 20, top: 20, bottom: 20 }}>
+        <ResponsiveContainer width="100%" height={Math.max(isMobile ? 260 : 300, debitosPorEmpresa.length * (isMobile ? 32 : 40))}>
+          <BarChart data={debitosPorEmpresa} margin={isMobile ? { left: 10, right: 10, top: 10, bottom: 10 } : { left: 20, right: 20, top: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(229, 240, 255, 0.1)" />
             <XAxis 
               dataKey="empresa"
-              tick={{ fill: '#E5F0FF', fontSize: 10 }}
+              tick={{ fill: '#E5F0FF', fontSize: isMobile ? 9 : 10 }}
               axisLine={{ stroke: 'rgba(229, 240, 255, 0.2)' }}
-              angle={-35}
+              angle={isMobile ? -45 : -35}
               textAnchor="end"
-              height={80}
+              height={isMobile ? 90 : 80}
               interval={0}
             />
             <YAxis 
-              tick={{ fill: '#E5F0FF', fontSize: 12 }}
+              tick={{ fill: '#E5F0FF', fontSize: isMobile ? 10 : 12 }}
               axisLine={{ stroke: 'rgba(229, 240, 255, 0.2)' }}
               tickFormatter={formatCurrency}
             />
