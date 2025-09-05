@@ -19,6 +19,8 @@ interface SidebarProps {
   isAdmin: boolean;
   onLogout: () => void;
   onResetDashboard: () => void;
+  isMobile?: boolean;
+  onClose?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -37,6 +39,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   isAdmin,
   onLogout,
   onResetDashboard,
+  isMobile,
+  onClose,
 }) => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -50,8 +54,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  return (
-    <div className="fixed top-0 left-0 h-full w-60 bg-[#0B1B34] text-white shadow-lg z-50 flex flex-col">
+  const inner = (
+    <>
       <div className="flex-1 overflow-y-auto p-6">
       {/* Logo e Título */}
       <div className="text-center mb-8">
@@ -64,6 +68,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <h2 className="text-white text-xl font-bold">{empresaSelecionada === 'jejuro' ? 'Grupo Jejuro' : (currentUser === 'cfsmart' ? 'CF Smart' : 'Grupo Pralog')}</h2>
         <p className="text-[#E5F0FF]/80 text-sm">Smart Tax</p>
+        {isMobile && (
+          <button
+            onClick={onClose}
+            className="mt-4 px-4 py-2 bg-[#2F6BFF]/20 hover:bg-[#2F6BFF]/30 rounded-lg text-[#E5F0FF] hover:text-white transition-colors"
+          >
+            Fechar
+          </button>
+        )}
         
         {/* Botão Home */}
         <button
@@ -183,6 +195,23 @@ const Sidebar: React.FC<SidebarProps> = ({
           <span>Sair</span>
         </button>
       </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 z-[60] md:hidden">
+        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+        <div className="absolute inset-y-0 left-0 w-72 max-w-[85%] bg-[#0B1B34] text-white shadow-2xl border-r border-white/10 flex flex-col">
+          {inner}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="hidden md:flex fixed top-0 left-0 h-full w-60 bg-[#0B1B34] text-white shadow-lg z-50 flex-col">
+      {inner}
     </div>
   );
 };

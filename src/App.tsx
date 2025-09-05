@@ -25,6 +25,7 @@ function App() {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced' | 'error'>('idle');
   const [realtimeSubscription, setRealtimeSubscription] = useState<any>(null);
   const [selectedEmpresa, setSelectedEmpresa] = useState<'pralog' | 'jejuro' | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Verificar autenticação salva
   useEffect(() => {
@@ -505,45 +506,72 @@ function App() {
         onLogout={handleLogout}
         onResetDashboard={handleResetDashboard}
       />
+      {isMobileSidebarOpen && (
+        <Sidebar
+          currentUser={currentUser}
+          empresaSelecionada={selectedEmpresa || 'pralog'}
+          gruposUnicos={gruposUnicos}
+          empresasDoGrupo={empresasDoGrupo}
+          grupoSelecionado={grupoSelecionado}
+          empresasSelecionadas={empresasSelecionadas}
+          onGrupoChange={setGrupoSelecionado}
+          onEmpresaChange={setEmpresasSelecionadas}
+          onFileUpload={handleFileUpload}
+          onResetToDefault={handleResetToDefault}
+          onDownloadTemplate={handleDownloadTemplate}
+          isUsingCustomData={isUsingCustomData}
+          isLoading={loading}
+          isAdmin={(selectedEmpresa === 'pralog' && currentUser === 'cfsmart') || (selectedEmpresa === 'jejuro' && currentUser === 'cfsmart01')}
+          onLogout={handleLogout}
+          onResetDashboard={handleResetDashboard}
+          isMobile
+          onClose={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
       
-      <div className="ml-60 p-6">
+      <div className="md:ml-60 ml-0 p-4 md:p-6">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-white text-3xl font-bold mb-2">
-            Smart Tax
-          </h1>
-          <div className="flex items-center gap-4">
-            <p className="text-[#E5F0FF]/80">
-              {`Análise de Situação Tributária - Grupo ${selectedEmpresa === 'jejuro' ? 'JEJURO' : 'PRA LOG'}`}
-            </p>
-            
-            {/* Status badges */}
-            <div className="flex gap-2">
-              {isUsingCustomData && (
-                <span className="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30">
-                  📊 Dados Centralizados
-                </span>
-              )}
-              
-              {syncStatus === 'syncing' && (
-                <span className="text-xs bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full border border-yellow-500/30 animate-pulse">
-                  🔄 Sincronizando...
-                </span>
-              )}
-              
-              {syncStatus === 'synced' && (
-                <span className="text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full border border-green-500/30">
-                  ✅ Sincronizado
-                </span>
-              )}
-              
-              {syncStatus === 'error' && (
-                <span className="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/30">
-                  ⚠️ Erro na Sincronização
-                </span>
-              )}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-white text-2xl md:text-3xl font-bold mb-2">Smart Tax</h1>
+            <div className="flex items-center gap-4">
+              <p className="text-[#E5F0FF]/80">
+                {`Análise de Situação Tributária - Grupo ${selectedEmpresa === 'jejuro' ? 'JEJURO' : 'PRA LOG'}`}
+              </p>
+              {/* Status badges */}
+              <div className="flex gap-2">
+                {isUsingCustomData && (
+                  <span className="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30">
+                    📊 Dados Centralizados
+                  </span>
+                )}
+                {syncStatus === 'syncing' && (
+                  <span className="text-xs bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full border border-yellow-500/30 animate-pulse">
+                    🔄 Sincronizando...
+                  </span>
+                )}
+                {syncStatus === 'synced' && (
+                  <span className="text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full border border-green-500/30">
+                    ✅ Sincronizado
+                  </span>
+                )}
+                {syncStatus === 'error' && (
+                  <span className="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/30">
+                    ⚠️ Erro na Sincronização
+                  </span>
+                )}
+              </div>
             </div>
           </div>
+          <button
+            className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white/10 hover:bg:white/20 text-white"
+            onClick={() => setIsMobileSidebarOpen(true)}
+            aria-label="Abrir menu"
+          >
+            <span className="block w-5 h-0.5 bg-white mb-1"></span>
+            <span className="block w-5 h-0.5 bg-white mb-1"></span>
+            <span className="block w-5 h-0.5 bg-white"></span>
+          </button>
         </div>
 
         {/* Metric Cards */}
